@@ -1,0 +1,17 @@
+<html>
+  <body>
+
+<p>Categories in templates</p>
+{% for category in categories %}
+  <p>
+    {{category.name}}</br>
+    {{category.c_id}} </br>
+   
+    <a href="{{url_for('deleteCategory', category_id=category.c_id)}}">Delete Category</a></br>
+    <a href="{{url_for('editCategory', category_id=category.c_id)}}">Edit Category</a>
+  </p>
+	
+{% endfor %}
+
+  </body>
+</html>
