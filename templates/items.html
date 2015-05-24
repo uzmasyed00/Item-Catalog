@@ -1,0 +1,18 @@
+<html>
+  <body>
+<a href="{{url_for('newItem', category_id=category.c_id)}}">Create new item</a></br>
+{% if items !=[] %}
+     <p>Items:</p>
+	{% for item in items %}
+  	<p>
+    	{{item.name}}</br>
+    	{{item.item_id}} </br>
+	{{item.description}}</br>
+
+	<a href="{{url_for('deleteItem', category_id=category.c_id, item_id=item.item_id)}}">Delete Item</a></br>
+    	<a href="{{url_for('editItem', category_id=category.c_id, item_id=item.item_id)}}">Edit Item</a>
+  	</p>	
+	{% endfor %}
+{% endif %}
+  </body>
+</html>
