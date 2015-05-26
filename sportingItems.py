@@ -51,8 +51,13 @@ def editItem(category_id, item_id):
     category_to_edit = session.query(Categories).get(category_id)
     item_to_edit = session.query(Items).get(item_id)
     if request.method == 'POST':
-        return redirect(url_for('ShowItems'),category_id)
-        print "I am in if statement"
+        item_to_edit.name = request.form['name']
+        print "item_to_edit.name is ", item_to_edit.name
+        item_to_edit.description = request.form['description']
+        print "item_to_edit.description is ", item_to_edit.description
+        #session.add(item_to_edit)
+        session.commit()
+        return redirect(url_for('ShowItems',category_id = category_id))
     else:
         return render_template('editItem.html', category_id = category_id, item_id = item_id)
         #return render_template('editItem.html', category_to_edit, item_to_edit)
