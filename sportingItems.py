@@ -12,7 +12,7 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
 @app.route('/categories/new',methods = ['GET','POST'])
-def CategoriesNew():
+def newCategory():
     if request.method =='POST':
         category = Categories(name = request.form['name'])
         #print category
@@ -55,7 +55,6 @@ def editItem(category_id, item_id):
         print "item_to_edit.name is ", item_to_edit.name
         item_to_edit.description = request.form['description']
         print "item_to_edit.description is ", item_to_edit.description
-        #session.add(item_to_edit)
         session.commit()
         return redirect(url_for('ShowItems',category_id = category_id))
     else:
@@ -65,6 +64,15 @@ def editItem(category_id, item_id):
 @app.route('/category/<int:category_id>/item/<int:item_id>/delete',methods = ['GET','POST'])
 def deleteItem(category_id, item_id):
     print "I am going to delete the item"
+    #category_to_edit = session.query(Categories).get(category_id)
+    item_to_delete = session.query(Items).get(item_id)
+    if request.method == 'POST':
+        session.delete(item_to_delete)
+        session.commit()
+        return redirect(url_for('ShowItems',category_id = category_id))
+    else:
+        return render_template('deleteItem.html', category_id = category_id, item_id = item_id)
+        #return render_template('editItem.html', category_to_edit, item_to_edit)
     
 @app.route('/categories',methods = ['GET']) 
 def ShowCategories():

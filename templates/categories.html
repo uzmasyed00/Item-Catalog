@@ -1,6 +1,6 @@
 <html>
   <body>
-<a href="{{url_for('CategoriesNew')}}" > <h3> Create a New Category </h3> </a>
+<a href="{{url_for('newCategory')}}" > <h3> Create a New Category </h3> </a>
 {% for category in categories %}
   <p>
     {{category.name}}</br>
