@@ -23,7 +23,7 @@ CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
 APPLICATION_NAME = "ItemCatalog"
 
-engine = create_engine('sqlite:///Project3.db')
+engine = create_engine('sqlite:///ItemCatalog.db')
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
@@ -117,13 +117,51 @@ def gconnect():
     print "done!"
     return output
 
+@app.route('/gdisconnect')
+def gdisconnect():
+        # Only disconnect a connected user.
+    credentials = login_session.get('credentials')
+    print "credentials is", credentials
+    if credentials is None:
+        response = make_response(
+            json.dumps('Current user not connected.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    access_token = credentials.access_token
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
+    print "access_token is", access_token
+    f = open("accessToken.txt", 'w')
+    f.write(access_token)
+    f.close()
+    h = httplib2.Http()
+    result = h.request(url, 'GET')[0]
+    print "result is", result
+
+    if result['status'] == '200':
+        # Reset the user's sesson.
+        del login_session['credentials']
+        del login_session['gplus_id']
+        del login_session['username']
+        del login_session['email']
+        del login_session['picture']
+
+        response = make_response(json.dumps('Successfully disconnected.'), 200)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    else:
+        # For whatever reason, the given token was invalid.
+        response = make_response(
+            json.dumps('Failed to revoke token for given user.', 400))
+        response.headers['Content-Type'] = 'application/json'
+        return response
+
 def createUser(login_session):
     newUser = User(name=login_session['username'], email=login_session[
                    'email'], picture=login_session['picture'])
     session.add(newUser)
     session.commit()
-    #user = session.query(User).filter_by(email=login_session['email']).one()
-    #return user.id
+    user = session.query(User).filter_by(email=login_session['email']).one()
+    return user.id
 
 
 def getUserInfo(user_id):
@@ -223,6 +261,7 @@ def deleteItem(category_id, item_id):
     
 @app.route('/categories',methods = ['GET']) 
 def ShowCategories():
+    print login_session['state']
     categories = session.query(Categories).all()
     for category in categories:
         print category.name
