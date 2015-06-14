@@ -168,7 +168,7 @@ def gdisconnect():
 def determineOriginatorOfContent(content):
     print "content name is", content.name
     print "content.user_id is", content.user_id
-    print "content.id is", content.c_id
+    #print "content.id is", content.c_id
     print "login_session[email] is", login_session['email']
     if (getUserID(login_session['email']) != content.user_id):
         print "Can't edit"
@@ -244,6 +244,11 @@ def newCategory():
 def newItem(category_id):
     if 'username' not in login_session:
         return redirect('/login')
+    category_to_edit = session.query(Categories).get(category_id)
+    IsOriginatorOfContent = determineOriginatorOfContent(category_to_edit)
+    print "determineOriginatorOfContent is", IsOriginatorOfContent
+    if not IsOriginatorOfContent:
+        return "<script>function myFunction() {alert('You are not authorized to create a new item in this category.');}</script><body onload='myFunction()''>"
     if request.method =='POST':
         item = Items(name = request.form['name'],description = request.form['description'],category_id = category_id)
         session.add(item)
@@ -266,6 +271,11 @@ def editItem(category_id, item_id):
         return redirect('/login')
     category_to_edit = session.query(Categories).get(category_id)
     item_to_edit = session.query(Items).get(item_id)
+    IsOriginatorOfContent = determineOriginatorOfContent(item_to_edit)
+    print "determineOriginatorOfContent is", IsOriginatorOfContent
+
+    if not IsOriginatorOfContent:
+        return "<script>function myFunction() {alert('You are not authorized to edit this item as this does not belong to you.');}</script><body onload='myFunction()''>"
     if request.method == 'POST':
         if request.form['name']:
             item_to_edit.name = request.form['name']
@@ -283,6 +293,11 @@ def deleteItem(category_id, item_id):
     if 'username' not in login_session:
         return redirect('/login')
     item_to_delete = session.query(Items).get(item_id)
+    IsOriginatorOfContent = determineOriginatorOfContent(item_to_delete)
+    print "determineOriginatorOfContent is", IsOriginatorOfContent
+
+    if not IsOriginatorOfContent:
+        return "<script>function myFunction() {alert('You are not authorized to delete this item as this does not belong to you.');}</script><body onload='myFunction()''>"
     if request.method == 'POST':
         session.delete(item_to_delete)
         session.commit()
