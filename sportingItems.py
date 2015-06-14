@@ -106,6 +106,15 @@ def gconnect():
     login_session['picture'] = data['picture']
     login_session['email'] = data['email']
 
+    user_id = getUserID(login_session['email'])
+    print "user_id is", user_id
+    if not user_id:
+        print "I am going to create a new user"
+        user_id = createUser(login_session)
+        login_session['user_id'] = user_id
+        print "user_id of created user is", user_id
+        
+
     output = ''
     output += '<h1>Welcome, '
     output += login_session['username']
@@ -114,6 +123,7 @@ def gconnect():
     output += login_session['picture']
     output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
     flash("you are now logged in as %s" % login_session['username'])
+
     print "done!"
     return output
 
@@ -155,6 +165,18 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
+def determineOriginatorOfContent(content):
+    print "content name is", content.name
+    print "content.user_id is", content.user_id
+    print "content.id is", content.c_id
+    print "login_session[email] is", login_session['email']
+    if (getUserID(login_session['email']) != content.user_id):
+        print "Can't edit"
+        return False
+    else:
+        print "can edit"
+        return True
+
 def createUser(login_session):
     newUser = User(name=login_session['username'], email=login_session[
                    'email'], picture=login_session['picture'])
@@ -175,6 +197,12 @@ def getUserID(email):
         return user.id
     except:
         return None
+
+@app.route('/Users')
+def showUsers():
+    users= session.query(User).all()
+    for user in users:
+        print "user_id is", user.id
 
 # Create anti-forgery state token
 @app.route('/login')
@@ -197,10 +225,12 @@ def ShowItemsJSON(category_id):
     
 @app.route('/categories/new',methods = ['GET','POST'])
 def newCategory():
+    
+    #print "user_id is", userId
     if 'username' not in login_session:
         return redirect('/login')
     if request.method =='POST':
-        category = Categories(name = request.form['name'])
+        category = Categories(name = request.form['name'], user_id = getUserID(login_session['email']))
         #print category
         session.add(category)
         session.commit()
@@ -226,7 +256,8 @@ def newItem(category_id):
 def ShowItems(category_id):
     print "I am inside ShowItems"
     category = session.query(Categories).filter_by(c_id = category_id).one()
-    items = session.query(Items).filter_by(category_id = category_id).all()       
+    items = session.query(Items).filter_by(category_id = category_id).all()
+    
     return render_template('items.html', items = items, category = category)
 
 @app.route('/category/<int:category_id>/item/<int:item_id>/edit',methods = ['GET','POST'])
@@ -261,17 +292,24 @@ def deleteItem(category_id, item_id):
     
 @app.route('/categories',methods = ['GET']) 
 def ShowCategories():
-    print login_session['state']
+    
     categories = session.query(Categories).all()
     for category in categories:
         print category.name
-    return render_template('categories.html', categories = categories)
+    if 'username' not in login_session:    
+        return render_template('publicCategories.html', categories = categories)
+    else:
+        return render_template('categories.html', categories = categories)
 
 @app.route('/category/<int:category_id>/edit',methods = ['GET','POST'])
 def editCategory(category_id):
     if 'username' not in login_session:
         return redirect('/login')
     category_to_edit = session.query(Categories).get(category_id)
+    IsOriginatorOfContent = determineOriginatorOfContent(category_to_edit)
+    print "determineOriginatorOfContent is", IsOriginatorOfContent
+    if not IsOriginatorOfContent:
+        return "<script>function myFunction() {alert('You are not authorized to edit this category.');}</script><body onload='myFunction()''>"
     if request.method =='POST':
         category_name = request.form['name']
         category_to_edit.name = category_name
@@ -286,6 +324,9 @@ def deleteCategory(category_id):
     if 'username' not in login_session:
         return redirect('/login')
     category_to_delete = session.query(Categories).filter_by(c_id=category_id).one()
+    IsOriginatorOfContent = determineOriginatorOfContent(category_to_delete)
+    if not IsOriginatorOfContent:
+        return "<script>function myFunction() {alert('You are not authorized to delete this category.');}</script><body onload='myFunction()''>"
     if request.method =='POST':        
         session.delete(category_to_delete)
         session.commit()
