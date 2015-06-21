@@ -157,13 +157,15 @@ def gdisconnect():
 
         response = make_response(json.dumps('Successfully disconnected.'), 200)
         response.headers['Content-Type'] = 'application/json'
-        return response
+        #return response
+        return redirect(url_for('showLogin'))
     else:
         # For whatever reason, the given token was invalid.
         response = make_response(
             json.dumps('Failed to revoke token for given user.', 400))
         response.headers['Content-Type'] = 'application/json'
         return response
+    
 
 def determineOriginatorOfContent(content):
     print "content name is", content.name
@@ -250,7 +252,7 @@ def newItem(category_id):
     if not IsOriginatorOfContent:
         return "<script>function myFunction() {alert('You are not authorized to create a new item in this category.');}</script><body onload='myFunction()''>"
     if request.method =='POST':
-        item = Items(name = request.form['name'],description = request.form['description'],category_id = category_id)
+        item = Items(name = request.form['name'],description = request.form['description'],category_id = category_id, user_id = getUserID(login_session['email']))
         session.add(item)
         session.commit()
         return redirect(url_for('ShowItems', category_id = category_id))
@@ -262,8 +264,10 @@ def ShowItems(category_id):
     print "I am inside ShowItems"
     category = session.query(Categories).filter_by(c_id = category_id).one()
     items = session.query(Items).filter_by(category_id = category_id).all()
-    
-    return render_template('items.html', items = items, category = category)
+    if 'username' not in login_session:    
+        return render_template('publicItems.html', items = items, category = category)
+    else:
+        return render_template('items.html', items = items, category = category)
 
 @app.route('/category/<int:category_id>/item/<int:item_id>/edit',methods = ['GET','POST'])
 def editItem(category_id, item_id):

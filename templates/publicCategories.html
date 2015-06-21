@@ -1,7 +1,19 @@
 <html>
-  <body>
+<head>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='myStyles.css') }}">
+</head>
+
+<body>
+<div class = "ProjectName">
+<p id = "Project">
+Item Catalog 
+</p>
+
+<p><a id = "showLogin" href="{{url_for('showLogin')}}">Login</a></p></br>
+</div>
+<div class = "ProjectDetails">
 {% for category in categories %}
-  <p>
+  <p class = "names">
     {{category.name}}</br>
     {{category.c_id}} </br>
    
@@ -9,6 +21,6 @@
   </p>
 	
 {% endfor %}
-
+</div>
   </body>
 </html>

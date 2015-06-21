@@ -1,9 +1,18 @@
 <html>
 
 <head>
-<link rel=stylesheet type=text/css href="{{ url_for('static', filename='styles.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='myStyles.css') }}">
 	</head>
 <body>
+<div class = "ProjectName">
+<p id = "Project">
+Item Catalog 
+</p>
+
+<p><a id = "showLogin" href="{{url_for('gdisconnect')}}">Logout</a></p></br>
+</div>
+
+<div class = "ProjectDetails">
 
 <h1>New Category</h1>
 
@@ -17,6 +26,6 @@
 <input type='submit' value='Create'>
 
 </form>
-
+</div>
 </body>
 </html>

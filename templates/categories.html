@@ -1,8 +1,22 @@
 <html>
-  <body>
+<head>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='myStyles.css') }}">
+</head>
+
+<body>
+<div class = "ProjectName">
+<p id = "Project">
+Item Catalog 
+</p>
+
+<p><a id = "showLogin" href="{{url_for('gdisconnect')}}">Logout</a></p></br>
+</div>
+
+<div class = "ProjectDetails">
 <a href="{{url_for('newCategory')}}" > <h3> Create a New Category </h3> </a>
+
 {% for category in categories %}
-  <p>
+  <p class = "names">
     {{category.name}}</br>
     {{category.c_id}} </br>
    
@@ -12,6 +26,6 @@
   </p>
 	
 {% endfor %}
-
+</div>
   </body>
 </html>

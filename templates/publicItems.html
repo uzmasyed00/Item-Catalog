@@ -6,9 +6,8 @@
 <div class = "ProjectName">
 <p id = "Project">Item Catalog </p>
 </div>
-<p><a id = "showLogin" href="{{url_for('gdisconnect')}}">Logout</a></p></br>
+<p><a id = "showLogin" href="{{url_for('showLogin')}}">Login</a></p></br>
 <div class = "ProjectDetails">
-<a href="{{url_for('newItem', category_id=category.c_id)}}">Create new item</a></br>
 {% if items !=[] %}
      <h1>Items:</h1>
 	{% for item in items %}
@@ -16,9 +15,6 @@
     	{{item.name}}</br>
     	{{item.item_id}} </br>
 	{{item.description}}</br>
-
-	<a href="{{url_for('deleteItem', category_id=category.c_id, item_id=item.item_id)}}">Delete Item</a></br>
-    	<a href="{{url_for('editItem', category_id=category.c_id, item_id=item.item_id)}}">Edit Item</a>
   	</p>	
 	{% endfor %}
 {% endif %}
