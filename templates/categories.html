@@ -16,14 +16,13 @@ Item Catalog
 <a href="{{url_for('newCategory')}}" > <h3> Create a New Category </h3> </a>
 
 {% for category in categories %}
-  <p class = "names">
-    {{category.name}}</br>
-    {{category.c_id}} </br>
-   
-    <a href="{{url_for('ShowItems', category_id=category.c_id)}}">{{category.name}}</a></br>
-    <a href="{{url_for('deleteCategory', category_id=category.c_id)}}">Delete Category</a></br>
+<p class = "names">  
+    <a style = "background-color: #B2FF99;" href="{{url_for('ShowItems', category_id=category.c_id)}}">{{category.name}}</a></br>
+</p>
+<p>
+   <a href="{{url_for('deleteCategory', category_id=category.c_id)}}">Delete Category</a></br>
     <a href="{{url_for('editCategory', category_id=category.c_id)}}">Edit Category</a>
-  </p>
+</p>
 	
 {% endfor %}
 </div>

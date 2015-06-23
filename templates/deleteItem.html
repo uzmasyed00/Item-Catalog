@@ -7,11 +7,14 @@
 <div class = "ProjectName">
 <p id = "Project">Item Catalog </p>
 </div>
+<p><a id = "homePage" href = "{{url_for('ShowCategories')}}"> Home </a></p>
 <p><a id = "showLogin" href="{{url_for('gdisconnect')}}">Logout</a></p></br>
 <div class = "ProjectDetails">
 <p>Are you sure you want to delete the listed item?</p>
+<p><span style=";font-weight: bold">{{item.name}}</span></p>
  <form action="{{ url_for('deleteItem', category_id = category_id, item_id = item_id) }}" method="POST" name="delete_cat">
-		<input type="submit" value="Delete Item"></br>
+		<input type="submit" value="Delete Item">
+<a href = "{{url_for('ShowItems',category_id = category_id)}}"> Cancel </a>
 </form>
 </div>
 </body>

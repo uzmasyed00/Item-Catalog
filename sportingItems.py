@@ -212,7 +212,7 @@ def showLogin():
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in xrange(32))
     login_session['state'] = state
-    #return "The current session state is %s" % login_session['state']
+    print "The current session state is %s" % login_session['state']
     return render_template('login.html', STATE = state)
 
 @app.route('/categories/JSON') 
@@ -246,8 +246,8 @@ def newCategory():
 def newItem(category_id):
     if 'username' not in login_session:
         return redirect('/login')
-    category_to_edit = session.query(Categories).get(category_id)
-    IsOriginatorOfContent = determineOriginatorOfContent(category_to_edit)
+    category_for_item = session.query(Categories).get(category_id)
+    IsOriginatorOfContent = determineOriginatorOfContent(category_for_item)
     print "determineOriginatorOfContent is", IsOriginatorOfContent
     if not IsOriginatorOfContent:
         return "<script>function myFunction() {alert('You are not authorized to create a new item in this category.');}</script><body onload='myFunction()''>"
@@ -257,7 +257,7 @@ def newItem(category_id):
         session.commit()
         return redirect(url_for('ShowItems', category_id = category_id))
     else:
-        return render_template('newItem.html')
+        return render_template('newItem.html', category_id = category_id)
     
 @app.route('/category/<int:category_id>/item',methods = ['GET'])    
 def ShowItems(category_id):
@@ -279,7 +279,8 @@ def editItem(category_id, item_id):
     print "determineOriginatorOfContent is", IsOriginatorOfContent
 
     if not IsOriginatorOfContent:
-        return "<script>function myFunction() {alert('You are not authorized to edit this item as this does not belong to you.');}</script><body onload='myFunction()''>"
+        #return "<script>function myFunction() {if(confirm('You are not authorized to edit this item as this does not belong to you.')){return redirect(url_for('ShowCategories'));};}</script><body onload='myFunction()''>"
+        return "<script>function myFunction() {if(confirm('You are not authorized to edit this item as this does not belong to you.')){alert('thats great');};}</script><body onload='myFunction()''>"
     if request.method == 'POST':
         if request.form['name']:
             item_to_edit.name = request.form['name']
@@ -307,7 +308,7 @@ def deleteItem(category_id, item_id):
         session.commit()
         return redirect(url_for('ShowItems',category_id = category_id))
     else:
-        return render_template('deleteItem.html', category_id = category_id, item_id = item_id)
+        return render_template('deleteItem.html', category_id = category_id, item_id = item_id, item = item_to_delete)
     
 @app.route('/categories',methods = ['GET']) 
 def ShowCategories():
