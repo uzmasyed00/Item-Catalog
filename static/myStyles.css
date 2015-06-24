@@ -1,0 +1,58 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #ccc;
+}
+a#showLogin {
+    color:red; 
+    position: absolute;
+    top: 5px;
+    right: 50px; }
+
+a#homePage {
+    color:red; 
+    position: absolute;
+    top: 5px;
+    right: 120px; }
+
+.ProjectName{
+    width:1500px; 
+    text-align: center;
+    height: 100px; 
+    margin: 0 auto; 
+    background-color: #444;  
+    display: block;
+}
+
+.ProjectDetails{
+    margin-top: 50px;
+    margin-bottom: 50px;
+    margin-right: 150px;
+    margin-left: 150px;
+    padding-top:5px;
+    padding-left: 25px;
+    padding-bottom:25px;
+    background-color: #FFFAF0;
+    display: block;
+    border-style: solid;
+    border-width: 1px;
+    position: relative;
+}
+
+.ItemName{
+    position: relative;
+    margin-top: 0px;
+    margin-left: 0px;
+    border-style: solid;
+    border-width: 1px;
+}
+
+#Project{
+text-align: left;
+font-size:70px;
+color:white
+}
+
+.names{
+font-weight: bold;
+}

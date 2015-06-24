@@ -6,14 +6,13 @@
 <div class = "ProjectName">
 <p id = "Project">Item Catalog </p>
 </div>
-<p><a id = "showLogin" href="{{url_for('showLogin')}}">Login</a></p></br>
+<p><a id = "homePage" href = "{{url_for('ShowCategories')}}"> Home </a></p>
 <div class = "ProjectDetails">
 {% if items !=[] %}
      <h1>Items:</h1>
 	{% for item in items %}
   	<p class = "names">
     	{{item.name}}</br>
-    	{{item.item_id}} </br>
 	{{item.description}}</br>
   	</p>	
 	{% endfor %}

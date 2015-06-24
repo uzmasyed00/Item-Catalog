@@ -264,7 +264,9 @@ def ShowItems(category_id):
     print "I am inside ShowItems"
     category = session.query(Categories).filter_by(c_id = category_id).one()
     items = session.query(Items).filter_by(category_id = category_id).all()
-    if 'username' not in login_session:    
+    IsOriginatorOfContent = determineOriginatorOfContent(category)
+    print "determineOriginatorOfContent is", IsOriginatorOfContent
+    if 'username' not in login_session or not IsOriginatorOfContent:    
         return render_template('publicItems.html', items = items, category = category)
     else:
         return render_template('items.html', items = items, category = category)
@@ -316,6 +318,9 @@ def ShowCategories():
     categories = session.query(Categories).all()
     for category in categories:
         print category.name
+    #IsOriginatorOfContent = determineOriginatorOfContent(category)
+    #print "determineOriginatorOfContent is", IsOriginatorOfContent
+    #if 'username' not in login_session or not IsOriginatorOfContent: 
     if 'username' not in login_session:    
         return render_template('publicCategories.html', categories = categories)
     else:
