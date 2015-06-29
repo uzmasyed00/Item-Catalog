@@ -38,7 +38,6 @@ def gconnect():
         return response
     # Obtain authorization code
     code = request.data
-    print "authorization_code is ", code
 
     try:
         # Upgrade the authorization code into a credentials object
@@ -53,15 +52,11 @@ def gconnect():
 
     # Check that the access token is valid.
     access_token = credentials.access_token
-    print "access_token is", access_token
     url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s'
            % access_token)
-    print "url is", url
     h = httplib2.Http()
-    print "h is", h
-
-    print h.request(url, 'GET')[1]
     result = json.loads(h.request(url, 'GET')[1])
+    
     # If there was an error in the access token info, abort.
     if result.get('error') is not None:
         response = make_response(json.dumps(result.get('error')), 500)
@@ -106,15 +101,12 @@ def gconnect():
     login_session['picture'] = data['picture']
     login_session['email'] = data['email']
 
+    # Create User in database if user does not exist already
     user_id = getUserID(login_session['email'])
-    print "user_id is", user_id
     if not user_id:
-        print "I am going to create a new user"
         user_id = createUser(login_session)
         login_session['user_id'] = user_id
-        print "user_id of created user is", user_id
         
-
     output = ''
     output += '<h1>Welcome, '
     output += login_session['username']
@@ -131,7 +123,6 @@ def gconnect():
 def gdisconnect():
         # Only disconnect a connected user.
     credentials = login_session.get('credentials')
-    print "credentials is", credentials
     if credentials is None:
         response = make_response(
             json.dumps('Current user not connected.'), 401)
@@ -139,13 +130,11 @@ def gdisconnect():
         return response
     access_token = credentials.access_token
     url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
-    print "access_token is", access_token
     f = open("accessToken.txt", 'w')
     f.write(access_token)
     f.close()
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
-    print "result is", result
 
     if result['status'] == '200':
         # Reset the user's sesson.
@@ -166,20 +155,15 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
     
-
 def determineOriginatorOfContent(content):
-    print "content name is", content.name
-    print "content.user_id is", content.user_id
-    #print "content.id is", content.c_id
-    print "login_session[email] is", login_session['email']
+    # Determine if given content is owned by user logged in. If not, return false, else true.
     if (getUserID(login_session['email']) != content.user_id):
-        print "Can't edit"
         return False
     else:
-        print "can edit"
         return True
 
 def createUser(login_session):
+    # Create new User from information in login_session object
     newUser = User(name=login_session['username'], email=login_session[
                    'email'], picture=login_session['picture'])
     session.add(newUser)
@@ -187,24 +171,18 @@ def createUser(login_session):
     user = session.query(User).filter_by(email=login_session['email']).one()
     return user.id
 
-
 def getUserInfo(user_id):
+    # Return user object given user_id
     user = session.query(User).filter_by(id=user_id).one()
     return user
 
-
 def getUserID(email):
+    # Return user_id given logged in user's email
     try:
         user = session.query(User).filter_by(email=email).one()
         return user.id
     except:
         return None
-
-@app.route('/Users')
-def showUsers():
-    users= session.query(User).all()
-    for user in users:
-        print "user_id is", user.id
 
 # Create anti-forgery state token
 @app.route('/login')
@@ -212,7 +190,6 @@ def showLogin():
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in xrange(32))
     login_session['state'] = state
-    print "The current session state is %s" % login_session['state']
     return render_template('login.html', STATE = state)
 
 @app.route('/categories/JSON') 
@@ -227,32 +204,37 @@ def ShowItemsJSON(category_id):
     
 @app.route('/categories/new',methods = ['GET','POST'])
 def newCategory():
-    
-    #print "user_id is", userId
+    # Redirect user to login page if user not logged in
     if 'username' not in login_session:
         return redirect('/login')
     if request.method =='POST':
-        category = Categories(name = request.form['name'], user_id = getUserID(login_session['email']))
-        #print category
+        #From the given information on newCategory.html, create and save the category in the database
+        category = Categories(name = request.form['name'],
+                              user_id = getUserID(login_session['email']))
         session.add(category)
         session.commit()
         category_id = session.query(Categories).filter_by(name = category.name).one().c_id
-        print "category_id is", category_id
         return redirect(url_for('ShowCategories'))
     else:
+        # If get request, redirect user to create new category
         return render_template('newCategory.html')
     
 @app.route('/category/<int:category_id>/item/new',methods = ['GET','POST'])
 def newItem(category_id):
+    # Redirect user to login page if user not logged in
     if 'username' not in login_session:
         return redirect('/login')
     category_for_item = session.query(Categories).get(category_id)
     IsOriginatorOfContent = determineOriginatorOfContent(category_for_item)
-    print "determineOriginatorOfContent is", IsOriginatorOfContent
+    # If logged in user did not create category/item, alert the user with the appropriate warning/message
     if not IsOriginatorOfContent:
         return "<script>function myFunction() {alert('You are not authorized to create a new item in this category.');}</script><body onload='myFunction()''>"
     if request.method =='POST':
-        item = Items(name = request.form['name'],description = request.form['description'],category_id = category_id, user_id = getUserID(login_session['email']))
+        # #From the given information on newItem.html, create and save the item in the database
+        item = Items(name = request.form['name'],
+                     description = request.form['description'],
+                     category_id = category_id,
+                     user_id = getUserID(login_session['email']))
         session.add(item)
         session.commit()
         return redirect(url_for('ShowItems', category_id = category_id))
@@ -261,11 +243,12 @@ def newItem(category_id):
     
 @app.route('/category/<int:category_id>/item',methods = ['GET'])    
 def ShowItems(category_id):
-    print "I am inside ShowItems"
+    
     category = session.query(Categories).filter_by(c_id = category_id).one()
     items = session.query(Items).filter_by(category_id = category_id).all()
     IsOriginatorOfContent = determineOriginatorOfContent(category)
-    print "determineOriginatorOfContent is", IsOriginatorOfContent
+    #If user not logged in or if logged in user did not create item, redirect user to publicItems.html
+    #where no option to add/edit/delete item is provided
     if 'username' not in login_session or not IsOriginatorOfContent:    
         return render_template('publicItems.html', items = items, category = category)
     else:
@@ -273,36 +256,40 @@ def ShowItems(category_id):
 
 @app.route('/category/<int:category_id>/item/<int:item_id>/edit',methods = ['GET','POST'])
 def editItem(category_id, item_id):
+
+    # Redirect user to login page if user not logged in
     if 'username' not in login_session:
         return redirect('/login')
     category_to_edit = session.query(Categories).get(category_id)
     item_to_edit = session.query(Items).get(item_id)
     IsOriginatorOfContent = determineOriginatorOfContent(item_to_edit)
-    print "determineOriginatorOfContent is", IsOriginatorOfContent
 
+    # If logged in user did not create category/item, alert the user with the appropriate warning/message
     if not IsOriginatorOfContent:
         #return "<script>function myFunction() {if(confirm('You are not authorized to edit this item as this does not belong to you.')){return redirect(url_for('ShowCategories'));};}</script><body onload='myFunction()''>"
         return "<script>function myFunction() {if(confirm('You are not authorized to edit this item as this does not belong to you.')){alert('thats great');};}</script><body onload='myFunction()''>"
     if request.method == 'POST':
         if request.form['name']:
             item_to_edit.name = request.form['name']
-        print "item_to_edit.name is ", item_to_edit.name
         if request.form['description']:
             item_to_edit.description = request.form['description']
-        print "item_to_edit.description is ", item_to_edit.description
         session.commit()
         return redirect(url_for('ShowItems',category_id = category_id))
     else:
-        return render_template('editItem.html', category_id = category_id, item_id = item_id, item = item_to_edit)
+        return render_template('editItem.html',
+                               category_id = category_id,
+                               item_id = item_id,
+                               item = item_to_edit)
 
 @app.route('/category/<int:category_id>/item/<int:item_id>/delete',methods = ['GET','POST'])
 def deleteItem(category_id, item_id):
+
+    # Redirect user to login page if user not logged in
     if 'username' not in login_session:
         return redirect('/login')
     item_to_delete = session.query(Items).get(item_id)
     IsOriginatorOfContent = determineOriginatorOfContent(item_to_delete)
-    print "determineOriginatorOfContent is", IsOriginatorOfContent
-
+    # If logged in user did not create category/item, alert the user with the appropriate warning/message
     if not IsOriginatorOfContent:
         return "<script>function myFunction() {alert('You are not authorized to delete this item as this does not belong to you.');}</script><body onload='myFunction()''>"
     if request.method == 'POST':
@@ -316,11 +303,8 @@ def deleteItem(category_id, item_id):
 def ShowCategories():
     
     categories = session.query(Categories).all()
-    for category in categories:
-        print category.name
-    #IsOriginatorOfContent = determineOriginatorOfContent(category)
-    #print "determineOriginatorOfContent is", IsOriginatorOfContent
-    #if 'username' not in login_session or not IsOriginatorOfContent: 
+    #If user not logged in, redirect user to publicCategories.html
+    #where no option to add/edit/delete category is provided
     if 'username' not in login_session:    
         return render_template('publicCategories.html', categories = categories)
     else:
@@ -328,11 +312,13 @@ def ShowCategories():
 
 @app.route('/category/<int:category_id>/edit',methods = ['GET','POST'])
 def editCategory(category_id):
+
+    # Redirect user to login page if user not logged in
     if 'username' not in login_session:
         return redirect('/login')
     category_to_edit = session.query(Categories).get(category_id)
     IsOriginatorOfContent = determineOriginatorOfContent(category_to_edit)
-    print "determineOriginatorOfContent is", IsOriginatorOfContent
+    # If logged in user did not create category, alert the user with the appropriate warning/message
     if not IsOriginatorOfContent:
         return "<script>function myFunction() {alert('You are not authorized to edit this category.');}</script><body onload='myFunction()''>"
     if request.method =='POST':
@@ -345,11 +331,13 @@ def editCategory(category_id):
 
 @app.route('/category/<int:category_id>/delete',methods = ['GET','POST'])
 def deleteCategory(category_id):
-    #category_to_delete = session.query(Categories).get(category_id)
+    
+    # Redirect user to login page if user not logged in
     if 'username' not in login_session:
         return redirect('/login')
     category_to_delete = session.query(Categories).filter_by(c_id=category_id).one()
     IsOriginatorOfContent = determineOriginatorOfContent(category_to_delete)
+    # If logged in user did not create category, alert the user with the appropriate warning/message
     if not IsOriginatorOfContent:
         return "<script>function myFunction() {alert('You are not authorized to delete this category.');}</script><body onload='myFunction()''>"
     if request.method =='POST':        
