@@ -266,8 +266,8 @@ def editItem(category_id, item_id):
 
     # If logged in user did not create category/item, alert the user with the appropriate warning/message
     if not IsOriginatorOfContent:
-        #return "<script>function myFunction() {if(confirm('You are not authorized to edit this item as this does not belong to you.')){return redirect(url_for('ShowCategories'));};}</script><body onload='myFunction()''>"
-        return "<script>function myFunction() {if(confirm('You are not authorized to edit this item as this does not belong to you.')){alert('thats great');};}</script><body onload='myFunction()''>"
+        return "<script>function myFunction() {if(confirm('You are not authorized to edit this item as this does not belong to you.')){return redirect(url_for('ShowCategories'));};}</script><body onload='myFunction()''>"
+        #return "<script>function myFunction() {if(confirm('You are not authorized to edit this item as this does not belong to you.')){alert('thats great');};}</script><body onload='myFunction()''>"
     if request.method == 'POST':
         if request.form['name']:
             item_to_edit.name = request.form['name']
