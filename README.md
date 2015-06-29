@@ -13,7 +13,7 @@ accessToken.txt
 client_secrets.json
 database_setup.py
        sportingItems.py
-While in the working directory, run database_setup.py by typing “python database_setup.py”. This will generate a database_setup.pyc file in the working directory.
+While in the working directory, run database_setup.py by typing “python database_setup.py”. This will generate “ItemCatalog.db” file in the working directory.
 Next, type “python sportingItems.py”. Running this command will start the webserver on port 8000 on your local machine.
 Now, in a browser of your choice, type the following URL:
 http://localhost:8000/categories
