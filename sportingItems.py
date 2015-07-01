@@ -87,7 +87,7 @@ def gconnect():
         return response
 
     # Store the access token in the session for later use.
-    login_session['credentials'] = credentials
+    login_session['credentials'] = credentials.to_json()
     login_session['gplus_id'] = gplus_id
 
     # Get user info
@@ -298,7 +298,8 @@ def deleteItem(category_id, item_id):
         return redirect(url_for('ShowItems',category_id = category_id))
     else:
         return render_template('deleteItem.html', category_id = category_id, item_id = item_id, item = item_to_delete)
-    
+
+@app.route('/')    
 @app.route('/categories',methods = ['GET']) 
 def ShowCategories():
     
