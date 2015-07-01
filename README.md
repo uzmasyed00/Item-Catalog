@@ -1,6 +1,7 @@
 # Item-Catalog
 
 Install Git, Vagrant and Virtual Box. 
+Download and install Python 2.7 from https://www.python.org/downloads/ if not already installed on your machine
 From the terminal, run “git clone http://github.com/udacity/fullstack-nanodegree-vm fullstack”. This will give you a directory named fullstack.
 In the terminal, navigate to fullstack/vagrant/catalog and clone the https://github.com/uzmasyed00/Item-Catalog repository in the working directory
 Using the terminal, change directory to fullstack/vagrant (cd fullstack/vagrant), then type vagrant up to launch your virtual machine followed by "vagrant ssh". 
